@@ -21,6 +21,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', KategoriController::class);
     });
     Route::resource('produk', ProdukController::class);
+    Route::resource('transaksi', TransaksiController::class)->only(['create', 'store', 'show', 'index']);
+    Route::post('transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
+    Route::delete('transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
 });
 
 require __DIR__.'/auth.php';
