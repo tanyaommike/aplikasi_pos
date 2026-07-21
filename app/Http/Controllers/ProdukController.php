@@ -30,7 +30,7 @@ class ProdukController extends Controller implements HasMiddleware
         $query = Produk::query();
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('nama_produk', 'like', '%' . $request->search . '%');
         }
 
         $produk = $query->latest()->get();
@@ -76,7 +76,7 @@ class ProdukController extends Controller implements HasMiddleware
     {
         $this->checkAdmin();
         $kategori = Kategori::all();
-        return view('produk.edit', compact('produk', 'kategori'));
+        return view('products.edit', compact('produk', 'kategori'));
     }
 
     // 5. Update produk
