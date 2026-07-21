@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Produk;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ProdukController extends Controller
+class ProdukController extends Controller implements HasMiddleware
 {
-    // Middleware: hanya admin yang boleh akses
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware('auth');
+        return [
+            'auth',
+        ];
     }
 
     private function checkAdmin()
@@ -22,11 +25,16 @@ class ProdukController extends Controller
     }
 
     // 1. Tampilkan list produk
-    public function index()
+    public function index(Request $request)
     {
-        $this->checkAdmin();
-        $produk = Produk::with('kategori')->get();
-        return view('produk.index', compact('produk'));
+        $query = Produk::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $produk = $query->latest()->get();
+        return view('products.index', compact('produk'));
     }
 
     // 2. Tampilkan form create
@@ -34,7 +42,7 @@ class ProdukController extends Controller
     {
         $this->checkAdmin();
         $kategori = Kategori::all();
-        return view('produk.create', compact('kategori'));
+        return view('products.create', compact('kategori'));
     }
 
     // 3. Simpan produk baru

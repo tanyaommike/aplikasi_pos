@@ -12,11 +12,16 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if ($message = Session::get('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ $message }}
-                </div>
-            @endif
+
+            <form method="GET" action="{{ route('produk.index') }}" class="mb-4 flex gap-2">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                    placeholder="Cari nama produk..." 
+                    class="border rounded px-3 py-2 w-full sm:w-64">
+                <button type="submit" 
+                        class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    Cari
+                </button>
+            </form>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <table class="w-full border-collapse">
