@@ -6,12 +6,16 @@ use App\Models\Transaksi;
 use App\Models\TransaksiDetail;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TransaksiController extends Controller
+class TransaksiController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware('auth');
+        return [
+            'auth',
+        ];
     }
 
     // 1. Tampilkan form transaksi (pilih produk)

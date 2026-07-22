@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KategoriController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\TransaksiController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,7 +22,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', KategoriController::class);
     });
     Route::resource('produk', ProdukController::class);
-    Route::resource('transaksi', TransaksiController::class)->only(['create', 'store', 'show', 'index']);
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
     Route::post('transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
     Route::delete('transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
 });
