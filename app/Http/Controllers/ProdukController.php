@@ -7,6 +7,8 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use App\Http\Requests\StoreProdukRequest;
+use App\Http\Requests\UpdateProdukRequest;
 
 class ProdukController extends Controller implements HasMiddleware
 {
@@ -52,18 +54,9 @@ class ProdukController extends Controller implements HasMiddleware
     }
 
     // 3. Simpan produk baru
-    public function store(Request $request)
+    public function store(StoreProdukRequest $request)
     {
-        $this->checkAdmin();
-
-        $validated = $request->validate([
-            'kategori_id' => 'required|exists:kategori,id',
-            'nama_produk' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-            'harga' => 'required|integer|min:1000',
-            'stok' => 'required|integer|min:0',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        $validated = $request->validated();
 
         // Handle foto upload
         if ($request->hasFile('foto')) {
@@ -86,18 +79,9 @@ class ProdukController extends Controller implements HasMiddleware
     }
 
     // 5. Update produk
-    public function update(Request $request, Produk $produk)
+    public function update(UpdateProdukRequest $request, Produk $produk)
     {
-        $this->checkAdmin();
-
-        $validated = $request->validate([
-            'kategori_id' => 'required|exists:kategori,id',
-            'nama_produk' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-            'harga' => 'required|integer|min:1000',
-            'stok' => 'required|integer|min:0',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        $validated = $request->validated();
 
         // Handle foto upload
         if ($request->hasFile('foto')) {
