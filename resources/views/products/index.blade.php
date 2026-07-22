@@ -77,6 +77,14 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="mt-4">
+                {{ $produk->appends(request()->query())->links() }}
+            </div>
+
         </div>
     </div>
+
+
+
 </x-app-layout>

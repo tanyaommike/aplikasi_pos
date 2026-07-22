@@ -37,7 +37,7 @@ class ProdukController extends Controller implements HasMiddleware
             $query->where('kategori_id', $request->kategori_id);
         }
 
-        $produk = $query->latest()->get();
+        $produk = $query->latest()->paginate(10);
         $kategori = Kategori::all(); // buat dropdown filter
 
         return view('products.index', compact('produk', 'kategori'));
