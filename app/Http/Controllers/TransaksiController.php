@@ -8,6 +8,8 @@ use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use App\Http\Requests\AddToCartRequest;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller implements HasMiddleware
 {
@@ -33,29 +35,28 @@ class TransaksiController extends Controller implements HasMiddleware
     }
 
     // 2. Tambah item ke cart (AJAX)
-    public function addToCart(Request $request)
+    public function addToCart(AddToCartRequest $request)
     {
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'produk_id' => 'required|exists:produk,id',
-            'jumlah' => 'required|integer|min:1',
-        ]);
-
-        $produk = Produk::find($validated['produk_id']);
-
-        // Cek stok
-        if ($produk->stok < $validated['jumlah']) {
-            return response()->json(['message' => 'Stok tidak cukup'], 400);
-        }
+        $validated = $request->validated();
+        $produk = Produk::findOrFail($validated['produk_id']);
 
         $cart = session()->get('cart', []);
-        
-        // Jika produk sudah ada di cart, tambah jumlahnya
+
+        // Jumlah produk ini yang SUDAH ada di cart
+        $jumlahDiCart = $cart[$validated['produk_id']]['jumlah'] ?? 0;
+        $totalJumlah = $jumlahDiCart + $validated['jumlah'];
+
+        // Cek stok terhadap TOTAL, bukan cuma jumlah yang baru diinput
+        if ($totalJumlah > $produk->stok) {
+            $sisa = max(0, $produk->stok - $jumlahDiCart);
+            return response()->json([
+                'message' => "Stok tidak cukup. Sisa yang bisa ditambahkan: {$sisa}",
+            ], 400);
+        }
+
         if (isset($cart[$validated['produk_id']])) {
-            $cart[$validated['produk_id']]['jumlah'] += $validated['jumlah'];
+            $cart[$validated['produk_id']]['jumlah'] = $totalJumlah;
+            $cart[$validated['produk_id']]['subtotal'] = $produk->harga * $totalJumlah;
         } else {
             $cart[$validated['produk_id']] = [
                 'produk_id' => $produk->id,
@@ -98,39 +99,47 @@ class TransaksiController extends Controller implements HasMiddleware
             return redirect()->back()->with('error', 'Keranjang kosong');
         }
 
-        // Hitung total
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['subtotal'];
+        try {
+            $transaksi = DB::transaction(function () use ($cart) {
+                $total = 0;
+                foreach ($cart as $item) {
+                    $total += $item['subtotal'];
+                }
+
+                $no_transaksi = 'TRX-' . date('Ymd') . '-' . time();
+
+                $transaksi = Transaksi::create([
+                    'user_id' => auth()->id(),
+                    'total_harga' => $total,
+                    'no_transaksi' => $no_transaksi,
+                    'tanggal_transaksi' => now(),
+                ]);
+
+                foreach ($cart as $item) {
+                    // Kunci baris produk ini selama transaksi berjalan
+                    $produk = Produk::where('id', $item['produk_id'])->lockForUpdate()->first();
+
+                    if (!$produk || $produk->stok < $item['jumlah']) {
+                        throw new \Exception("Stok {$item['nama_produk']} tidak cukup, transaksi dibatalkan.");
+                    }
+
+                    TransaksiDetail::create([
+                        'transaksi_id' => $transaksi->id,
+                        'produk_id' => $item['produk_id'],
+                        'jumlah' => $item['jumlah'],
+                        'harga_satuan' => $item['harga_satuan'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
+
+                    $produk->decrement('stok', $item['jumlah']);
+                }
+
+                return $transaksi;
+            });
+        } catch (\Exception $e) {
+            return redirect()->route('transaksi.create')->with('error', $e->getMessage());
         }
 
-        // Generate nomor transaksi
-        $no_transaksi = 'TRX-' . date('Ymd') . '-' . time();
-
-        // Simpan transaksi header
-        $transaksi = Transaksi::create([
-            'user_id' => auth()->id(),
-            'total_harga' => $total,
-            'no_transaksi' => $no_transaksi,
-            'tanggal_transaksi' => now(),
-        ]);
-
-        // Simpan detail transaksi & kurangi stok
-        foreach ($cart as $item) {
-            TransaksiDetail::create([
-                'transaksi_id' => $transaksi->id,
-                'produk_id' => $item['produk_id'],
-                'jumlah' => $item['jumlah'],
-                'harga_satuan' => $item['harga_satuan'],
-                'subtotal' => $item['subtotal'],
-            ]);
-
-            // Kurangi stok produk
-            $produk = Produk::find($item['produk_id']);
-            $produk->update(['stok' => $produk->stok - $item['jumlah']]);
-        }
-
-        // Clear cart
         session()->forget('cart');
 
         return redirect()->route('transaksi.show', $transaksi->id)->with('success', 'Transaksi berhasil disimpan');

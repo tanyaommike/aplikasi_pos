@@ -8,6 +8,11 @@
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                @if (session('success'))
+                    <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-center font-semibold">
+                        ✓ {{ session('success') }}
+                    </div>
+                @endif
                 <div class="text-center mb-6">
                     <h3 class="text-2xl font-bold">STRUK TRANSAKSI</h3>
                     <p class="text-gray-600">{{ $transaksi->no_transaksi }}</p>
@@ -25,6 +30,7 @@
                             <th class="border px-3 py-2 text-center">Qty</th>
                             <th class="border px-3 py-2 text-right">Harga</th>
                             <th class="border px-3 py-2 text-right">Subtotal</th>
+                            <th class="border px-3 py-2 text-center">Sisa Stok</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,6 +40,7 @@
                                 <td class="border px-3 py-2 text-center">{{ $item->jumlah }}</td>
                                 <td class="border px-3 py-2 text-right">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                                 <td class="border px-3 py-2 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                <td class="border px-3 py-2 text-center">{{ $item->produk->stok }}</td>
                             </tr>
                         @endforeach
                     </tbody>

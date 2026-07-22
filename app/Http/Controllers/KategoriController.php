@@ -3,20 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreKategoriRequest;
+use App\Http\Requests\UpdateKategoriRequest;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class KategoriController extends Controller
+class KategoriController extends Controller implements HasMiddleware
 {
-    // Middleware: hanya admin yang boleh akses
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+        ];
+    }
+
+    private function checkAdmin()
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya Admin yang bisa akses kategori');
+        }
+    }
 
     // 1. Tampilkan list kategori
     public function index()
     {
-        // Cek role admin
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
-
+        $this->checkAdmin();
         $kategori = Kategori::all();
         return view('kategori.index', compact('kategori'));
     }
@@ -24,64 +35,35 @@ class KategoriController extends Controller
     // 2. Tampilkan form create
     public function create()
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
+        $this->checkAdmin();
         return view('kategori.create');
     }
 
     // 3. Simpan kategori baru
-    public function store(Request $request)
+    public function store(StoreKategoriRequest $request)
     {
-
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
-
-        $validated = $request->validate([
-            'nama_kategori' => 'required|string|max:100|unique:kategori',
-            'deskripsi' => 'nullable|string',
-        ]);
-
-        Kategori::create($validated);
-
+        Kategori::create($request->validated());
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambah');
     }
 
     // 4. Tampilkan form edit
     public function edit(Kategori $kategori)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
-
+        $this->checkAdmin();
         return view('kategori.edit', compact('kategori'));
     }
 
     // 5. Update kategori
-    public function update(Request $request, Kategori $kategori)
+    public function update(UpdateKategoriRequest $request, Kategori $kategori)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
-
-        $validated = $request->validate([
-            'nama_kategori' => 'required|string|max:100|unique:kategori,nama_kategori,' . $kategori->id,
-            'deskripsi' => 'nullable|string',
-        ]);
-
-        $kategori->update($validated);
-
+        $kategori->update($request->validated());
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diubah');
     }
 
     // 6. Delete kategori
     public function destroy(Kategori $kategori)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya Admin yang bisa akses kategori');
-        }
-        
+        $this->checkAdmin();
         $kategori->delete();
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus');
     }

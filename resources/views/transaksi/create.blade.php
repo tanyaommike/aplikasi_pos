@@ -31,6 +31,12 @@
 
                         <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Tambah ke Keranjang</button>
                     </form>
+                    
+                    @if (session('error'))
+                        <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            {{ session('error') }}
+                        </div>
+                    @endif
 
                     @if ($errors->any())
                         <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -100,7 +106,7 @@
         document.getElementById('formAddToCart').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = new FormData(this);
+            const formData = new FormData(e.target);
             const response = await fetch('{{ route("transaksi.addToCart") }}', {
                 method: 'POST',
                 headers: {
