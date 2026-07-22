@@ -27,6 +27,6 @@ class TransaksiDetail extends Model
     // Relasi: Detail refer ke satu Produk
     public function produk()
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Produk::class)->withTrashed();
     }
 }
