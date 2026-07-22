@@ -13,15 +13,24 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <form method="GET" action="{{ route('produk.index') }}" class="mb-4 flex gap-2">
-                <input type="text" name="search" value="{{ request('search') }}" 
-                    placeholder="Cari nama produk..." 
-                    class="border rounded px-3 py-2 w-full sm:w-64">
-                <button type="submit" 
-                        class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    Cari
-                </button>
-            </form>
+    <form method="GET" action="{{ route('produk.index') }}" class="mb-4 flex gap-2">
+        <input type="text" name="search" value="{{ request('search') }}" 
+            placeholder="Cari nama produk..." 
+            class="border rounded px-3 py-2 w-full sm:w-64">
+
+        <select name="kategori_id" class="border rounded px-3 py-2">
+            <option value="">Semua Kategori</option>
+            @foreach ($kategori as $kat)
+                <option value="{{ $kat->id }}" {{ request('kategori_id') == $kat->id ? 'selected' : '' }}>
+                    {{ $kat->nama_kategori }}
+                </option>
+            @endforeach
+        </select>
+
+        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+            Cari
+        </button>
+    </form>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <table class="w-full border-collapse">
