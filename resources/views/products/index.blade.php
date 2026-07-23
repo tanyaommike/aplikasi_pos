@@ -106,6 +106,9 @@
 
                         <!-- Actions -->
                         <div class="flex gap-2">
+                            <a href="{{ route('stok.mutasiForm', $item->id) }}" title="Kelola Stok" class="inline-flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <i class="fas fa-exchange-alt"></i>
+                            </a>
                             <a href="{{ route('produk.edit', $item->id) }}" class="flex-1 inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 <i class="fas fa-edit"></i>
                                 Edit

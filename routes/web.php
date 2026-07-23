@@ -1,31 +1,34 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KategoriController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\TransaksiController;
+use App\Models\Kategori;
+use App\Models\Produk;
+use App\Models\Transaksi;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    $totalProduk = \App\Models\Produk::count();
-    $totalKategori = \App\Models\Kategori::count();
-    $totalTransaksi = \App\Models\Transaksi::count();
-    $produkHabis = \App\Models\Produk::where('stok', '<=', 5)->count();
-    $transaksiHariIni = \App\Models\Transaksi::whereDate('tanggal_transaksi', today())->count();
-    $pendapatanHariIni = \App\Models\Transaksi::whereDate('tanggal_transaksi', today())->sum('total_harga');
-    
-    $recentTransaksi = \App\Models\Transaksi::with('user')->latest()->take(5)->get();
-    
+    $totalProduk = Produk::count();
+    $totalKategori = Kategori::count();
+    $totalTransaksi = Transaksi::count();
+    $produkHabis = Produk::where('stok', '<=', 5)->count();
+    $transaksiHariIni = Transaksi::whereDate('tanggal_transaksi', today())->count();
+    $pendapatanHariIni = Transaksi::whereDate('tanggal_transaksi', today())->sum('total_harga');
+
+    $recentTransaksi = Transaksi::with('user')->latest()->take(5)->get();
+
     return view('dashboard', compact(
-        'totalProduk', 
-        'totalKategori', 
-        'totalTransaksi', 
+        'totalProduk',
+        'totalKategori',
+        'totalTransaksi',
         'produkHabis',
         'transaksiHariIni',
         'pendapatanHariIni',
@@ -37,13 +40,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // Kategori routes
     Route::resource('kategori', KategoriController::class);
-    
+
     // Produk routes
     Route::resource('produk', ProdukController::class);
-    
+
     // Transaksi routes
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
     Route::get('/transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');

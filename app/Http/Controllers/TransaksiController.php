@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaksi;
-use App\Models\TransaksiDetail;
+use App\Http\Requests\AddToCartRequest;
 use App\Models\Produk;
 use App\Models\StockHistory;
+use App\Models\Transaksi;
+use App\Models\TransaksiDetail;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
-use App\Http\Requests\AddToCartRequest;
 use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller implements HasMiddleware
@@ -25,13 +24,13 @@ class TransaksiController extends Controller implements HasMiddleware
     public function create()
     {
         // Hanya kasir & admin
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
             abort(403, 'Tidak berhak akses transaksi');
         }
 
         $produk = Produk::with('kategori')->where('stok', '>', 0)->get();
         $cart = session()->get('cart', []);
-        
+
         return view('transaksi.create', compact('produk', 'cart'));
     }
 
@@ -50,6 +49,7 @@ class TransaksiController extends Controller implements HasMiddleware
         // Cek stok terhadap TOTAL, bukan cuma jumlah yang baru diinput
         if ($totalJumlah > $produk->stok) {
             $sisa = max(0, $produk->stok - $jumlahDiCart);
+
             return response()->json([
                 'message' => "Stok tidak cukup. Sisa yang bisa ditambahkan: {$sisa}",
             ], 400);
@@ -76,7 +76,7 @@ class TransaksiController extends Controller implements HasMiddleware
     // 3. Hapus item dari cart
     public function removeFromCart($produk_id)
     {
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
             abort(403);
         }
 
@@ -90,7 +90,7 @@ class TransaksiController extends Controller implements HasMiddleware
     // 4. Simpan transaksi
     public function store(Request $request)
     {
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
             abort(403);
         }
 
@@ -123,7 +123,7 @@ class TransaksiController extends Controller implements HasMiddleware
 
         try {
             $transaksi = DB::transaction(function () use ($cart, $request, $total, $kembalian) {
-                $no_transaksi = 'TRX-' . date('Ymd') . '-' . time();
+                $no_transaksi = 'TRX-'.date('Ymd').'-'.time();
 
                 $transaksi = Transaksi::create([
                     'user_id' => auth()->id(),
@@ -140,7 +140,7 @@ class TransaksiController extends Controller implements HasMiddleware
                     // Kunci baris produk ini selama transaksi berjalan
                     $produk = Produk::where('id', $item['produk_id'])->lockForUpdate()->first();
 
-                    if (!$produk || $produk->stok < $item['jumlah']) {
+                    if (! $produk || $produk->stok < $item['jumlah']) {
                         throw new \Exception("Stok {$item['nama_produk']} tidak cukup, transaksi dibatalkan.");
                     }
 
@@ -180,7 +180,7 @@ class TransaksiController extends Controller implements HasMiddleware
     // 5. Tampilkan struk/detail transaksi
     public function show(Transaksi $transaksi)
     {
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
             abort(403);
         }
 
@@ -197,7 +197,7 @@ class TransaksiController extends Controller implements HasMiddleware
     // 6. Tampilkan list transaksi
     public function index()
     {
-        if (!in_array(auth()->user()->role, ['kasir', 'admin'])) {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
             abort(403);
         }
 

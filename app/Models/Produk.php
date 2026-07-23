@@ -11,6 +11,7 @@ class Produk extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'produk';
+
     protected $fillable = [
         'kategori_id',
         'nama_produk',
@@ -46,7 +47,7 @@ class Produk extends Model
     // Accessor untuk format harga
     public function getHargaFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->harga, 0, ',', '.');
+        return 'Rp '.number_format($this->harga, 0, ',', '.');
     }
 
     // Scope untuk produk yang tersedia
