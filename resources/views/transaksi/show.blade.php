@@ -15,27 +15,38 @@
         </div>
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto" x-data="editPaymentModal()">
         @if (session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-center font-semibold flex items-center justify-center gap-2">
+            <div class="no-print mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-center font-semibold flex items-center justify-center gap-2">
                 <i class="fas fa-check-circle"></i>
                 {{ session('success') }}
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="no-print mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-center font-semibold flex items-center justify-center gap-2">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Invoice Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-8">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h3 class="text-3xl font-bold mb-2">INVOICE</h3>
-                        <p class="text-indigo-100 text-lg">{{ $transaksi->no_transaksi }}</p>
+        <div id="invoice" class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <!-- Header: brand + no invoice -->
+            <div class="bg-slate-800 text-white p-8">
+                <div class="flex items-start justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-store text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold tracking-wide">{{ config('store.name') }}</p>
+                            <p class="text-slate-300 text-xs">{{ config('store.address') }}</p>
+                        </div>
                     </div>
                     <div class="text-right">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                            <i class="fas fa-file-invoice text-3xl"></i>
-                        </div>
+                        <p class="text-slate-300 text-xs uppercase tracking-widest mb-1">Invoice</p>
+                        <p class="text-lg font-bold font-mono">{{ $transaksi->no_transaksi }}</p>
                     </div>
                 </div>
             </div>
@@ -56,10 +67,9 @@
                         </div>
                     </div>
                     <div class="text-left md:text-right">
-                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Tanggal Transaksi</p>
-                        <p class="font-bold text-slate-800">{{ $transaksi->tanggal_transaksi->format('d F Y') }}</p>
-                        <p class="text-sm text-slate-600">{{ $transaksi->tanggal_transaksi->format('H:i:s') }} WIB</p>
-                        <p class="text-xs text-slate-500 mt-1">{{ $transaksi->tanggal_transaksi->diffForHumans() }}</p>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Tanggal & Waktu Transaksi</p>
+                        <p class="font-bold text-slate-800">{{ $transaksi->tanggal_transaksi->translatedFormat('d F Y') }}</p>
+                        <p class="text-sm text-slate-600">{{ $transaksi->tanggal_transaksi->format('H:i') }} WIB</p>
                     </div>
                 </div>
 
@@ -87,20 +97,15 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-slate-800">QRIS</p>
+                                    <p class="text-sm text-slate-600">Scan kode QR untuk membayar</p>
                                 </div>
-                            @elseif($transaksi->payment_method === 'debit')
+                            @elseif($transaksi->payment_method === 'transfer')
                                 <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
-                                    <i class="fas fa-credit-card text-xl"></i>
+                                    <i class="fas fa-university text-xl"></i>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-slate-800">Debit Card</p>
-                                </div>
-                            @elseif($transaksi->payment_method === 'credit')
-                                <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center text-white">
-                                    <i class="fas fa-credit-card text-xl"></i>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-slate-800">Credit Card</p>
+                                    <p class="font-bold text-slate-800">Transfer Bank</p>
+                                    <p class="text-sm text-slate-600">{{ config('store.bank.name') }} {{ config('store.bank.account_number') }} a.n. {{ config('store.bank.account_holder') }}</p>
                                 </div>
                             @endif
                         </div>
@@ -115,6 +120,29 @@
                             </span>
                         @endif
                     </div>
+
+                    @if($transaksi->payment_method === 'qris')
+                        @php
+                            $qrMatrix = qris_dummy_matrix();
+                            $qrModules = count($qrMatrix);
+                            $qrViewBox = $qrModules * 10;
+                        @endphp
+                        <div class="mt-4 flex flex-col items-center gap-2">
+                            <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                <svg viewBox="0 0 {{ $qrViewBox }} {{ $qrViewBox }}" width="180" height="180" class="block" role="img" aria-label="QR Code QRIS">
+                                    <rect x="0" y="0" width="{{ $qrViewBox }}" height="{{ $qrViewBox }}" fill="#ffffff" />
+                                    @foreach ($qrMatrix as $row => $cols)
+                                        @foreach ($cols as $col => $filled)
+                                            @if ($filled)
+                                                <rect x="{{ $col * 10 }}" y="{{ $row * 10 }}" width="10" height="10" fill="#1e293b" />
+                                            @endif
+                                        @endforeach
+                                    @endforeach
+                                </svg>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-500">Scan untuk membayar via QRIS</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -125,20 +153,19 @@
                     Detail Produk
                 </h4>
                 <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-slate-50 border-b-2 border-slate-200">
+                    <table class="w-full border border-slate-200 rounded-lg overflow-hidden">
+                        <thead class="bg-slate-100 border-b-2 border-slate-300">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Produk</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Qty</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Harga</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-slate-200">Produk</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-slate-200">Qty</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-slate-200">Harga</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Subtotal</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Stok Sisa</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @foreach ($transaksi->detail as $item)
                                 <tr class="hover:bg-slate-50">
-                                    <td class="px-4 py-4">
+                                    <td class="px-4 py-4 border-r border-slate-100">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                                 {{ strtoupper(substr($item->produk->nama_produk, 0, 1)) }}
@@ -146,19 +173,13 @@
                                             <span class="font-semibold text-slate-800">{{ $item->produk->nama_produk }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center">
+                                    <td class="px-4 py-4 text-center border-r border-slate-100">
                                         <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-700 rounded-lg font-bold">
                                             {{ $item->jumlah }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 text-right text-slate-700">{{ format_rupiah($item->harga_satuan) }}</td>
+                                    <td class="px-4 py-4 text-right text-slate-700 border-r border-slate-100">{{ format_rupiah($item->harga_satuan) }}</td>
                                     <td class="px-4 py-4 text-right font-semibold text-slate-800">{{ format_rupiah($item->subtotal) }}</td>
-                                    <td class="px-4 py-4 text-center">
-                                        <span class="inline-flex items-center gap-1 {{ $item->produk->stok <= 5 ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }} px-3 py-1 rounded-full text-xs font-semibold">
-                                            <i class="fas fa-box"></i>
-                                            {{ $item->produk->stok }}
-                                        </span>
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -180,8 +201,17 @@
                 </div>
             </div>
 
+            <!-- Footer -->
+            <div class="px-8 py-6 border-t border-slate-200 text-center">
+                <p class="text-sm font-semibold text-slate-700 mb-3">Terima kasih atas kunjungan Anda!</p>
+                <a href="tel:{{ config('store.phone') }}" class="inline-flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full transition-colors">
+                    <i class="fas fa-phone-alt"></i>
+                    {{ config('store.phone') }}
+                </a>
+            </div>
+
             <!-- Footer Actions -->
-            <div class="p-6 bg-white border-t border-slate-200 flex flex-col sm:flex-row gap-3 justify-center">
+            <div class="no-print p-6 bg-white border-t border-slate-200 flex flex-col sm:flex-row gap-3 justify-center">
                 @if($transaksi->payment_status === 'pending')
                     <form action="{{ route('transaksi.confirmPayment', $transaksi->id) }}" method="POST">
                         @csrf
@@ -200,23 +230,84 @@
                     <i class="fas fa-plus-circle"></i>
                     Transaksi Baru
                 </a>
-                <a href="{{ route('transaksi.index') }}" class="inline-flex items-center justify-center gap-2 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-sm">
-                    <i class="fas fa-list"></i>
-                    Lihat Riwayat
-                </a>
+                <button type="button" @click="openModal()" class="inline-flex items-center justify-center gap-2 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-sm">
+                    <i class="fas fa-edit"></i>
+                    Ubah Pembayaran
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal: Ubah Pembayaran -->
+        <div x-show="open" x-cloak style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/50" @click="open = false"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" @click.stop x-show="open" x-transition>
+                <h3 class="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+                    <i class="fas fa-edit text-indigo-600"></i>
+                    Ubah Pembayaran
+                </h3>
+
+                <form action="{{ route('transaksi.updatePayment', $transaksi->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">Metode Pembayaran</label>
+                    <div class="grid grid-cols-3 gap-2 mb-5">
+                        <label class="flex flex-col items-center gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-colors"
+                            :class="method === 'cash' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'">
+                            <input type="radio" name="payment_method" value="cash" class="hidden" x-model="method">
+                            <i class="fas fa-money-bill-wave text-lg text-green-600"></i>
+                            <span class="text-xs font-semibold text-slate-800">Cash</span>
+                        </label>
+                        <label class="flex flex-col items-center gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-colors"
+                            :class="method === 'qris' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'">
+                            <input type="radio" name="payment_method" value="qris" class="hidden" x-model="method">
+                            <i class="fas fa-qrcode text-lg text-blue-600"></i>
+                            <span class="text-xs font-semibold text-slate-800">QRIS</span>
+                        </label>
+                        <label class="flex flex-col items-center gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-colors"
+                            :class="method === 'transfer' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'">
+                            <input type="radio" name="payment_method" value="transfer" class="hidden" x-model="method">
+                            <i class="fas fa-university text-lg text-purple-600"></i>
+                            <span class="text-xs font-semibold text-slate-800">Transfer</span>
+                        </label>
+                    </div>
+
+                    <div x-show="method === 'cash'" x-cloak>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Uang Dibayar</label>
+                        <input type="number" name="uang_dibayar" x-model.number="uangDibayar" min="{{ $transaksi->total_harga }}"
+                            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <p class="text-xs text-slate-400 mt-2">Total tagihan: {{ format_rupiah($transaksi->total_harga) }}</p>
+                        <p class="text-sm font-semibold mt-2" :class="kembalian >= 0 ? 'text-emerald-600' : 'text-red-500'" x-show="uangDibayar">
+                            Kembalian: <span x-text="'Rp ' + Math.max(0, kembalian).toLocaleString('id-ID')"></span>
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" @click="open = false" class="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold transition-all">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Print Styles -->
         <style>
             @media print {
+                @page {
+                    size: A4;
+                    margin: 12mm;
+                }
                 body * {
                     visibility: hidden;
                 }
-                .bg-white.rounded-2xl, .bg-white.rounded-2xl * {
+                #invoice, #invoice * {
                     visibility: visible;
                 }
-                .bg-white.rounded-2xl {
+                #invoice {
                     position: absolute;
                     left: 0;
                     top: 0;
@@ -224,10 +315,28 @@
                     box-shadow: none;
                     border: none;
                 }
-                button, a, form {
+                .no-print {
                     display: none !important;
                 }
             }
         </style>
     </div>
+
+    <script>
+        function editPaymentModal() {
+            return {
+                open: false,
+                method: '{{ $transaksi->payment_method }}',
+                uangDibayar: {{ $transaksi->uang_dibayar ?? $transaksi->total_harga }},
+                get kembalian() {
+                    return (this.uangDibayar || 0) - {{ $transaksi->total_harga }};
+                },
+                openModal() {
+                    this.method = '{{ $transaksi->payment_method }}';
+                    this.uangDibayar = {{ $transaksi->uang_dibayar ?? $transaksi->total_harga }};
+                    this.open = true;
+                },
+            };
+        }
+    </script>
 </x-app-layout>

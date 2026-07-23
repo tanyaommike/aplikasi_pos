@@ -102,7 +102,7 @@ class TransaksiController extends Controller implements HasMiddleware
 
         // Validate payment
         $request->validate([
-            'payment_method' => 'required|in:cash,qris,debit,credit',
+            'payment_method' => 'required|in:cash,qris,transfer',
         ]);
 
         $total = 0;
@@ -200,6 +200,46 @@ class TransaksiController extends Controller implements HasMiddleware
         $transaksi->update(['payment_status' => 'paid']);
 
         return redirect()->route('transaksi.show', $transaksi->id)->with('success', 'Pembayaran dikonfirmasi selesai.');
+    }
+
+    // 5c. Ubah metode/jumlah pembayaran dari halaman struk
+    public function updatePayment(Request $request, Transaksi $transaksi)
+    {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
+            abort(403);
+        }
+
+        if (auth()->user()->role === 'kasir' && $transaksi->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:cash,qris,transfer',
+            'uang_dibayar' => 'required_if:payment_method,cash|nullable|numeric|min:0',
+        ]);
+
+        $uangDibayar = null;
+        $kembalian = null;
+
+        if ($validated['payment_method'] === 'cash') {
+            $uangDibayar = $validated['uang_dibayar'];
+
+            if ($uangDibayar < $transaksi->total_harga) {
+                return redirect()->route('transaksi.show', $transaksi->id)
+                    ->with('error', 'Uang dibayar kurang dari total tagihan.')
+                    ->withInput();
+            }
+
+            $kembalian = $uangDibayar - $transaksi->total_harga;
+        }
+
+        $transaksi->update([
+            'payment_method' => $validated['payment_method'],
+            'uang_dibayar' => $uangDibayar,
+            'kembalian' => $kembalian,
+        ]);
+
+        return redirect()->route('transaksi.show', $transaksi->id)->with('success', 'Data pembayaran berhasil diperbarui.');
     }
 
     // 6. Tampilkan list transaksi

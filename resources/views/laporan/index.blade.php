@@ -123,8 +123,7 @@
                         $label = match($metode->payment_method) {
                             'cash' => 'Tunai',
                             'qris' => 'QRIS',
-                            'debit' => 'Kartu Debit',
-                            'credit' => 'Kartu Kredit',
+                            'transfer' => 'Transfer Bank',
                             default => ucfirst($metode->payment_method),
                         };
                         $persen = $totalPendapatan > 0 ? round(($metode->total / $totalPendapatan) * 100) : 0;

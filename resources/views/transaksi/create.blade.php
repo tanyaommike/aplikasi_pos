@@ -148,7 +148,7 @@
                             <!-- Payment Method -->
                             <div class="mb-6">
                                 <label class="block text-sm font-semibold text-slate-700 mb-3">Metode Pembayaran</label>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-3 gap-2">
                                     <label class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-colors payment-option">
                                         <input type="radio" name="payment_method" value="cash" class="w-4 h-4 text-indigo-600" checked>
                                         <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
@@ -166,19 +166,11 @@
                                     </label>
 
                                     <label class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-colors payment-option">
-                                        <input type="radio" name="payment_method" value="debit" class="w-4 h-4 text-indigo-600">
+                                        <input type="radio" name="payment_method" value="transfer" class="w-4 h-4 text-indigo-600">
                                         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                                            <i class="fas fa-credit-card text-xs"></i>
+                                            <i class="fas fa-university text-xs"></i>
                                         </div>
-                                        <span class="text-sm font-semibold text-slate-800">Debit</span>
-                                    </label>
-
-                                    <label class="flex items-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-500 transition-colors payment-option">
-                                        <input type="radio" name="payment_method" value="credit" class="w-4 h-4 text-indigo-600">
-                                        <div class="w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                                            <i class="fas fa-credit-card text-xs"></i>
-                                        </div>
-                                        <span class="text-sm font-semibold text-slate-800">Kredit</span>
+                                        <span class="text-sm font-semibold text-slate-800">Transfer</span>
                                     </label>
                                 </div>
                                 <p class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">

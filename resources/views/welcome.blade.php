@@ -208,7 +208,7 @@
                             <i class="fas fa-credit-card text-white text-lg"></i>
                         </div>
                         <h3 class="font-bold text-slate-800 text-lg mb-2">Multi Metode Pembayaran</h3>
-                        <p class="text-sm text-slate-600">Terima pembayaran tunai, QRIS, kartu debit, hingga kredit dengan hitung kembalian otomatis.</p>
+                        <p class="text-sm text-slate-600">Terima pembayaran tunai, QRIS, hingga transfer bank dengan hitung kembalian otomatis.</p>
                     </div>
 
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
@@ -328,7 +328,7 @@
                         $faqs = [
                             ['q' => 'Apakah aplikasi ini bisa dipakai untuk berbagai jenis usaha?', 'a' => 'Bisa. Aplikasi ini fleksibel untuk kafe, restoran, toko retail, hingga usaha kecil lain yang butuh pencatatan transaksi dan stok.'],
                             ['q' => 'Apakah stok produk otomatis berkurang saat ada transaksi?', 'a' => 'Ya. Setiap transaksi akan langsung mengurangi stok produk terkait secara otomatis, lengkap dengan riwayat mutasinya.'],
-                            ['q' => 'Metode pembayaran apa saja yang didukung?', 'a' => 'Saat ini mendukung pembayaran tunai (dengan hitung kembalian otomatis), QRIS, kartu debit, dan kartu kredit.'],
+                            ['q' => 'Metode pembayaran apa saja yang didukung?', 'a' => 'Saat ini mendukung pembayaran tunai (dengan hitung kembalian otomatis), QRIS, dan transfer bank.'],
                             ['q' => 'Apakah semua karyawan bisa melihat laporan penjualan?', 'a' => 'Tidak. Akses dibedakan berdasarkan peran - kasir hanya bisa mengelola transaksi, sementara laporan dan manajemen stok hanya bisa diakses admin.'],
                             ['q' => 'Bisakah saya mencetak struk atau mengekspor laporan?', 'a' => 'Bisa. Struk transaksi bisa langsung dicetak, dan laporan penjualan bisa disimpan sebagai PDF atau diekspor ke Excel/CSV.'],
                             ['q' => 'Apakah data transaksi dan stok aman?', 'a' => 'Setiap transaksi diproses secara atomik dengan penguncian data, jadi stok tidak akan salah hitung meskipun ada beberapa kasir yang bertransaksi bersamaan.'],

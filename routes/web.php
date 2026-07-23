@@ -42,10 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Kategori routes
-    Route::resource('kategori', KategoriController::class);
+    Route::resource('kategori', KategoriController::class)->except('show');
 
     // Produk routes
-    Route::resource('produk', ProdukController::class);
+    Route::resource('produk', ProdukController::class)->except('show');
 
     // Transaksi routes
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
     Route::delete('/transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
     Route::post('/transaksi/{transaksi}/pembayaran-selesai', [TransaksiController::class, 'confirmPayment'])->name('transaksi.confirmPayment');
+    Route::put('/transaksi/{transaksi}/update-payment', [TransaksiController::class, 'updatePayment'])->name('transaksi.updatePayment');
 
     // Laporan routes
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
