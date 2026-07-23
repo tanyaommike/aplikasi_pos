@@ -29,6 +29,8 @@ class ProdukController extends Controller implements HasMiddleware
     // 1. Tampilkan list produk
     public function index(Request $request)
     {
+        $this->checkAdmin();
+
         $query = Produk::with('kategori'); // Fix N+1 query
 
         if ($request->filled('search')) {
@@ -56,6 +58,8 @@ class ProdukController extends Controller implements HasMiddleware
     // 3. Simpan produk baru
     public function store(StoreProdukRequest $request)
     {
+        $this->checkAdmin();
+
         $validated = $request->validated();
 
         // Handle foto upload
@@ -81,6 +85,8 @@ class ProdukController extends Controller implements HasMiddleware
     // 5. Update produk
     public function update(UpdateProdukRequest $request, Produk $produk)
     {
+        $this->checkAdmin();
+
         $validated = $request->validated();
 
         // Handle foto upload
@@ -105,11 +111,9 @@ class ProdukController extends Controller implements HasMiddleware
     {
         $this->checkAdmin();
 
-        // Hapus foto kalau ada
-        if ($produk->foto && \Storage::disk('public')->exists($produk->foto)) {
-            \Storage::disk('public')->delete($produk->foto);
-        }
-
+        // Produk pakai SoftDeletes (masih bisa dipulihkan), jadi foto TIDAK
+        // dihapus di sini. Foto baru dihapus saat produk benar-benar
+        // dihapus permanen (force delete) atau saat diganti (lihat update()).
         $produk->delete();
 
         return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus');

@@ -42,6 +42,8 @@ class KategoriController extends Controller implements HasMiddleware
     // 3. Simpan kategori baru
     public function store(StoreKategoriRequest $request)
     {
+        $this->checkAdmin();
+
         Kategori::create($request->validated());
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambah');
     }
@@ -56,6 +58,8 @@ class KategoriController extends Controller implements HasMiddleware
     // 5. Update kategori
     public function update(UpdateKategoriRequest $request, Kategori $kategori)
     {
+        $this->checkAdmin();
+
         $kategori->update($request->validated());
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diubah');
     }
