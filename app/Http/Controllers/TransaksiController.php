@@ -103,7 +103,6 @@ class TransaksiController extends Controller implements HasMiddleware
         // Validate payment
         $request->validate([
             'payment_method' => 'required|in:cash,qris,debit,credit',
-            'uang_dibayar' => 'required_if:payment_method,cash|nullable|numeric|min:0',
         ]);
 
         $total = 0;
@@ -111,29 +110,22 @@ class TransaksiController extends Controller implements HasMiddleware
             $total += $item['subtotal'];
         }
 
-        // Validasi uang dibayar untuk cash
-        if ($request->payment_method === 'cash' && $request->uang_dibayar < $total) {
-            return redirect()->back()->with('error', 'Uang yang dibayar kurang dari total belanja');
-        }
-
-        $kembalian = 0;
-        if ($request->payment_method === 'cash') {
-            $kembalian = $request->uang_dibayar - $total;
-        }
-
         try {
-            $transaksi = DB::transaction(function () use ($cart, $request, $total, $kembalian) {
+            $transaksi = DB::transaction(function () use ($cart, $request, $total) {
                 $no_transaksi = 'TRX-'.date('Ymd').'-'.time();
 
+                // Belum ada integrasi payment gateway, jadi status dimulai
+                // dari "pending" dan dikonfirmasi manual oleh kasir lewat
+                // tombol "Pembayaran Selesai" di halaman struk.
                 $transaksi = Transaksi::create([
                     'user_id' => auth()->id(),
                     'total_harga' => $total,
                     'no_transaksi' => $no_transaksi,
                     'tanggal_transaksi' => now(),
                     'payment_method' => $request->payment_method,
-                    'payment_status' => 'paid',
-                    'uang_dibayar' => $request->payment_method === 'cash' ? $request->uang_dibayar : null,
-                    'kembalian' => $request->payment_method === 'cash' ? $kembalian : null,
+                    'payment_status' => 'pending',
+                    'uang_dibayar' => null,
+                    'kembalian' => null,
                 ]);
 
                 foreach ($cart as $item) {
@@ -192,6 +184,22 @@ class TransaksiController extends Controller implements HasMiddleware
         $transaksi->load(['user', 'detail.produk']);
 
         return view('transaksi.show', compact('transaksi'));
+    }
+
+    // 5b. Konfirmasi manual pembayaran sudah diterima (belum ada payment gateway)
+    public function confirmPayment(Transaksi $transaksi)
+    {
+        if (! in_array(auth()->user()->role, ['kasir', 'admin'])) {
+            abort(403);
+        }
+
+        if (auth()->user()->role === 'kasir' && $transaksi->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $transaksi->update(['payment_status' => 'paid']);
+
+        return redirect()->route('transaksi.show', $transaksi->id)->with('success', 'Pembayaran dikonfirmasi selesai.');
     }
 
     // 6. Tampilkan list transaksi

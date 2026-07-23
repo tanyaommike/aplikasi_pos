@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/{transaksi}', [TransaksiController::class, 'show'])->name('transaksi.show');
     Route::post('/transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
     Route::delete('/transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
+    Route::post('/transaksi/{transaksi}/pembayaran-selesai', [TransaksiController::class, 'confirmPayment'])->name('transaksi.confirmPayment');
 
     // Laporan routes
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
