@@ -7,6 +7,7 @@ use App\Models\TransaksiDetail;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanController extends Controller implements HasMiddleware
 {
@@ -24,10 +25,8 @@ class LaporanController extends Controller implements HasMiddleware
         }
     }
 
-    public function index(Request $request)
+    private function resolvePeriode(Request $request): array
     {
-        $this->checkAdmin();
-
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -41,6 +40,11 @@ class LaporanController extends Controller implements HasMiddleware
             ? Carbon::parse($request->end_date)->endOfDay()
             : now()->endOfDay();
 
+        return [$startDate, $endDate];
+    }
+
+    private function buildLaporanData(Carbon $startDate, Carbon $endDate): array
+    {
         $baseQuery = Transaksi::whereBetween('tanggal_transaksi', [$startDate, $endDate]);
 
         // Ringkasan
@@ -86,12 +90,7 @@ class LaporanController extends Controller implements HasMiddleware
             ->orderByDesc('total')
             ->get();
 
-        // Daftar transaksi periode ini
-        $transaksi = (clone $baseQuery)->with('user')->latest('tanggal_transaksi')->paginate(10)->withQueryString();
-
-        return view('laporan.index', compact(
-            'startDate',
-            'endDate',
+        return compact(
             'totalPendapatan',
             'totalTransaksi',
             'rataRataTransaksi',
@@ -99,8 +98,77 @@ class LaporanController extends Controller implements HasMiddleware
             'chartLabels',
             'chartData',
             'produkTerlaris',
-            'metodePembayaran',
-            'transaksi'
-        ));
+            'metodePembayaran'
+        );
+    }
+
+    public function index(Request $request)
+    {
+        $this->checkAdmin();
+
+        [$startDate, $endDate] = $this->resolvePeriode($request);
+        $data = $this->buildLaporanData($startDate, $endDate);
+
+        $transaksi = Transaksi::whereBetween('tanggal_transaksi', [$startDate, $endDate])
+            ->with('user')
+            ->latest('tanggal_transaksi')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('laporan.index', array_merge($data, compact('startDate', 'endDate', 'transaksi')));
+    }
+
+    // Tampilan siap-cetak (untuk disimpan sebagai PDF lewat dialog print browser)
+    public function cetak(Request $request)
+    {
+        $this->checkAdmin();
+
+        [$startDate, $endDate] = $this->resolvePeriode($request);
+        $data = $this->buildLaporanData($startDate, $endDate);
+
+        $transaksi = Transaksi::whereBetween('tanggal_transaksi', [$startDate, $endDate])
+            ->with('user')
+            ->latest('tanggal_transaksi')
+            ->get();
+
+        return view('laporan.cetak', array_merge($data, compact('startDate', 'endDate', 'transaksi')));
+    }
+
+    // Export daftar transaksi periode terpilih ke CSV (bisa dibuka Excel)
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        $this->checkAdmin();
+
+        [$startDate, $endDate] = $this->resolvePeriode($request);
+
+        $transaksi = Transaksi::whereBetween('tanggal_transaksi', [$startDate, $endDate])
+            ->with('user')
+            ->latest('tanggal_transaksi')
+            ->get();
+
+        $filename = 'laporan-penjualan_'.$startDate->format('Ymd').'-'.$endDate->format('Ymd').'.csv';
+
+        $callback = function () use ($transaksi) {
+            $out = fopen('php://output', 'w');
+            // BOM supaya Excel membaca UTF-8 dengan benar
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['No Transaksi', 'Tanggal', 'Kasir', 'Metode Pembayaran', 'Total']);
+
+            foreach ($transaksi as $item) {
+                fputcsv($out, [
+                    $item->no_transaksi,
+                    $item->tanggal_transaksi->format('Y-m-d H:i'),
+                    $item->user->name,
+                    strtoupper($item->payment_method),
+                    $item->total_harga,
+                ]);
+            }
+
+            fclose($out);
+        };
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 }

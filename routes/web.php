@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
 
     // Laporan routes
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
+    Route::get('/laporan/export-csv', [LaporanController::class, 'exportCsv'])->name('laporan.exportCsv');
 });
 
 require __DIR__.'/auth.php';

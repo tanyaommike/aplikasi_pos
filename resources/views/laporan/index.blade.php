@@ -29,6 +29,19 @@
                     <i class="fas fa-filter"></i>
                     Terapkan
                 </button>
+
+                <div class="flex gap-2">
+                    <a href="{{ route('laporan.cetak', ['start_date' => $startDate->toDateString(), 'end_date' => $endDate->toDateString()]) }}" target="_blank"
+                        class="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-sm">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="hidden sm:inline">Cetak PDF</span>
+                    </a>
+                    <a href="{{ route('laporan.exportCsv', ['start_date' => $startDate->toDateString(), 'end_date' => $endDate->toDateString()]) }}"
+                        class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-sm">
+                        <i class="fas fa-file-csv"></i>
+                        <span class="hidden sm:inline">Export Excel</span>
+                    </a>
+                </div>
             </form>
         </div>
 
