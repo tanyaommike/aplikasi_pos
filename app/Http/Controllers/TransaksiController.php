@@ -99,13 +99,29 @@ class TransaksiController extends Controller implements HasMiddleware
             return redirect()->back()->with('error', 'Keranjang kosong');
         }
 
-        try {
-            $transaksi = DB::transaction(function () use ($cart) {
-                $total = 0;
-                foreach ($cart as $item) {
-                    $total += $item['subtotal'];
-                }
+        // Validate payment
+        $request->validate([
+            'payment_method' => 'required|in:cash,qris,debit,credit',
+            'uang_dibayar' => 'required_if:payment_method,cash|nullable|numeric|min:0',
+        ]);
 
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['subtotal'];
+        }
+
+        // Validasi uang dibayar untuk cash
+        if ($request->payment_method === 'cash' && $request->uang_dibayar < $total) {
+            return redirect()->back()->with('error', 'Uang yang dibayar kurang dari total belanja');
+        }
+
+        $kembalian = 0;
+        if ($request->payment_method === 'cash') {
+            $kembalian = $request->uang_dibayar - $total;
+        }
+
+        try {
+            $transaksi = DB::transaction(function () use ($cart, $request, $total, $kembalian) {
                 $no_transaksi = 'TRX-' . date('Ymd') . '-' . time();
 
                 $transaksi = Transaksi::create([
@@ -113,6 +129,10 @@ class TransaksiController extends Controller implements HasMiddleware
                     'total_harga' => $total,
                     'no_transaksi' => $no_transaksi,
                     'tanggal_transaksi' => now(),
+                    'payment_method' => $request->payment_method,
+                    'payment_status' => 'paid',
+                    'uang_dibayar' => $request->payment_method === 'cash' ? $request->uang_dibayar : null,
+                    'kembalian' => $request->payment_method === 'cash' ? $kembalian : null,
                 ]);
 
                 foreach ($cart as $item) {

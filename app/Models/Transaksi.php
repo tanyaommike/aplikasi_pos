@@ -15,6 +15,10 @@ class Transaksi extends Model
         'total_harga',
         'no_transaksi',
         'tanggal_transaksi',
+        'payment_method',
+        'payment_status',
+        'uang_dibayar',
+        'kembalian',
     ];
 
     protected $casts = [

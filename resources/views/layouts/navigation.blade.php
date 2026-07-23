@@ -34,6 +34,13 @@
                         <i class="fas fa-shopping-cart"></i>
                         <span>Transaksi</span>
                     </x-nav-link>
+
+                    @if(Auth::user()->role === 'admin')
+                    <x-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.*')" class="flex items-center gap-2">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Laporan</span>
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -109,6 +116,13 @@
                 <i class="fas fa-shopping-cart w-5"></i>
                 {{ __('Transaksi') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'admin')
+            <x-responsive-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.*')" class="flex items-center gap-3">
+                <i class="fas fa-chart-line w-5"></i>
+                {{ __('Laporan') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
