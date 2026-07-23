@@ -28,7 +28,7 @@ class TransaksiController extends Controller implements HasMiddleware
             abort(403, 'Tidak berhak akses transaksi');
         }
 
-        $produk = Produk::with('kategori')->where('stok', '>', 0)->get();
+        $produk = Produk::with('kategori')->orderBy('nama_produk')->get();
         $cart = session()->get('cart', []);
 
         return view('transaksi.create', compact('produk', 'cart'));

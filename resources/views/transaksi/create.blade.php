@@ -13,78 +13,77 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Kolom kiri: Pilih Produk (2 kolom) -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Product Selection -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-shopping-basket text-indigo-600"></i>
-                        Pilih Produk
-                    </h3>
+                @if (session('error'))
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                @endif
 
-                    <form id="formAddToCart">
-                        @csrf
-                        <div class="space-y-4">
-                            <div>
-                                <label for="produk_id" class="block text-sm font-semibold text-slate-700 mb-2">Produk</label>
-                                <select id="produk_id" name="produk_id" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required>
-                                    <option value="">-- Pilih Produk --</option>
-                                    @foreach ($produk as $item)
-                                        <option value="{{ $item->id }}" data-harga="{{ $item->harga }}">
-                                            {{ $item->nama_produk }} - {{ format_rupiah($item->harga) }} (Stok: {{ $item->stok }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label for="jumlah" class="block text-sm font-semibold text-slate-700 mb-2">Jumlah</label>
-                                <input type="number" id="jumlah" name="jumlah" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="1" min="1" required>
-                            </div>
-
-                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                                <i class="fas fa-plus-circle"></i>
-                                Tambah ke Keranjang
-                            </button>
-                        </div>
-                    </form>
-                    
-                    @if (session('error'))
-                        <div class="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                @if ($errors->any())
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+                        <div class="flex items-center gap-3 mb-2">
                             <i class="fas fa-exclamation-circle text-red-500"></i>
-                            <span>{{ session('error') }}</span>
+                            <span class="font-semibold">Terdapat kesalahan:</span>
                         </div>
-                    @endif
-
-                    @if ($errors->any())
-                        <div class="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-                            <div class="flex items-center gap-3 mb-2">
-                                <i class="fas fa-exclamation-circle text-red-500"></i>
-                                <span class="font-semibold">Terdapat kesalahan:</span>
-                            </div>
-                            <ul class="list-disc list-inside space-y-1 text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                </div>
+                        <ul class="list-disc list-inside space-y-1 text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <!-- Available Products Grid -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i class="fas fa-box-open text-blue-600"></i>
-                        Produk Tersedia
+                        Pilih Produk
                     </h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+
+                    <div class="relative mb-4">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchProduk" placeholder="Cari produk..." autocomplete="off"
+                            class="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                    </div>
+
+                    <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[28rem] overflow-y-auto">
                         @foreach ($produk as $item)
-                            <button type="button" onclick="selectProduct({{ $item->id }})" class="p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all group text-left">
-                                <div class="aspect-square bg-slate-100 rounded-lg mb-2 overflow-hidden">
+                            @php $qtyDiCart = $cart[$item->id]['jumlah'] ?? 0; @endphp
+                            <button type="button"
+                                data-produk-card
+                                data-produk-id="{{ $item->id }}"
+                                data-nama-produk="{{ $item->nama_produk }}"
+                                data-stok="{{ $item->stok }}"
+                                {{ $item->stok <= 0 ? 'disabled' : '' }}
+                                class="relative p-3 border rounded-xl transition-all group text-left
+                                    {{ $item->stok <= 0
+                                        ? 'border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
+                                        : 'border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md cursor-pointer' }}">
+
+                                @if ($qtyDiCart > 0)
+                                    <span class="absolute -top-2 -right-2 z-10 bg-indigo-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-md" data-cart-badge>
+                                        {{ $qtyDiCart }}
+                                    </span>
+                                @endif
+
+                                <div class="aspect-square bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
                                     @if($item->foto)
                                         <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}" class="w-full h-full object-cover">
                                     @else
                                         <div class="w-full h-full flex items-center justify-center">
                                             <i class="fas fa-image text-slate-300 text-2xl"></i>
                                         </div>
+                                    @endif
+
+                                    @if ($item->stok > 0)
+                                        <span class="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i class="fas fa-plus text-xs"></i>
+                                        </span>
+                                    @else
+                                        <span class="absolute inset-0 flex items-center justify-center bg-white/60">
+                                            <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-1 rounded-full border border-slate-200">Stok Habis</span>
+                                        </span>
                                     @endif
                                 </div>
                                 <p class="text-xs font-semibold text-slate-800 truncate">{{ $item->nama_produk }}</p>
@@ -93,6 +92,8 @@
                             </button>
                         @endforeach
                     </div>
+
+                    <p id="noProductFound" class="hidden text-center text-sm text-slate-400 py-8">Produk tidak ditemukan</p>
                 </div>
             </div>
 
@@ -221,33 +222,92 @@
     </div>
 
     <script>
-        function selectProduct(productId) {
-            document.getElementById('produk_id').value = productId;
-            document.getElementById('jumlah').focus();
-        }
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        // Add to cart AJAX
-        document.getElementById('formAddToCart').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-20 right-6 z-50 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium transition-all duration-300 opacity-0 translate-x-4`;
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i><span>${message}</span>`;
+            document.body.appendChild(toast);
 
-            const formData = new FormData(e.target);
-            const response = await fetch('{{ route("transaksi.addToCart") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'Accept': 'application/json',
-                },
-                body: formData,
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-x-4');
             });
 
-            const data = await response.json();
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 1800);
+        }
 
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert(data.message || 'Gagal tambah item');
+        // Tambah produk ke keranjang lewat klik kartu produk
+        document.querySelectorAll('[data-produk-card]').forEach((card) => {
+            card.addEventListener('click', async () => {
+                if (card.disabled) return;
+
+                const produkId = card.dataset.produkId;
+                const namaProduk = card.dataset.namaProduk;
+
+                card.disabled = true;
+                card.classList.add('ring-2', 'ring-indigo-400', 'scale-95');
+
+                try {
+                    const formData = new FormData();
+                    formData.append('produk_id', produkId);
+                    formData.append('jumlah', 1);
+
+                    const response = await fetch('{{ route("transaksi.addToCart") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        sessionStorage.setItem('cartToast', `${namaProduk} ditambahkan ke keranjang`);
+                        setTimeout(() => location.reload(), 350);
+                    } else {
+                        card.disabled = false;
+                        card.classList.remove('ring-2', 'ring-indigo-400', 'scale-95');
+                        showToast(data.message || 'Gagal tambah item', true);
+                    }
+                } catch (err) {
+                    card.disabled = false;
+                    card.classList.remove('ring-2', 'ring-indigo-400', 'scale-95');
+                    showToast('Terjadi kesalahan, coba lagi', true);
+                }
+            });
+        });
+
+        // Tampilkan toast konfirmasi setelah reload
+        document.addEventListener('DOMContentLoaded', () => {
+            const pendingToast = sessionStorage.getItem('cartToast');
+            if (pendingToast) {
+                showToast(pendingToast);
+                sessionStorage.removeItem('cartToast');
             }
         });
+
+        // Search produk
+        const searchInput = document.getElementById('searchProduk');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                document.querySelectorAll('[data-produk-card]').forEach((card) => {
+                    const match = card.dataset.namaProduk.toLowerCase().includes(query);
+                    card.style.display = match ? '' : 'none';
+                    if (match) visibleCount++;
+                });
+
+                document.getElementById('noProductFound').classList.toggle('hidden', visibleCount > 0);
+            });
+        }
 
         // Payment method toggle
         document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
