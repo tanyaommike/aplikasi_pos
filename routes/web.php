@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\StockController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -55,6 +56,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
     Route::get('/laporan/export-csv', [LaporanController::class, 'exportCsv'])->name('laporan.exportCsv');
+
+    // Stok routes
+    Route::get('/stok', [StockController::class, 'index'])->name('stok.index');
+    Route::get('/stok/riwayat', [StockController::class, 'riwayat'])->name('stok.riwayat');
+    Route::get('/produk/{produk}/mutasi', [StockController::class, 'mutasiForm'])->name('stok.mutasiForm');
+    Route::post('/produk/{produk}/mutasi', [StockController::class, 'mutasi'])->name('stok.mutasi');
 });
 
 require __DIR__.'/auth.php';

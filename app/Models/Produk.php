@@ -37,6 +37,12 @@ class Produk extends Model
         return $this->hasMany(TransaksiDetail::class, 'produk_id');
     }
 
+    // Relasi: Produk punya banyak riwayat mutasi stok
+    public function stockHistories()
+    {
+        return $this->hasMany(StockHistory::class, 'produk_id')->latest('created_at');
+    }
+
     // Accessor untuk format harga
     public function getHargaFormattedAttribute()
     {

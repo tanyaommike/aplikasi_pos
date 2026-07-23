@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 use App\Models\TransaksiDetail;
 use App\Models\Produk;
+use App\Models\StockHistory;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -151,7 +152,18 @@ class TransaksiController extends Controller implements HasMiddleware
                         'subtotal' => $item['subtotal'],
                     ]);
 
+                    $stokSebelum = $produk->stok;
                     $produk->decrement('stok', $item['jumlah']);
+
+                    StockHistory::create([
+                        'produk_id' => $produk->id,
+                        'user_id' => auth()->id(),
+                        'tipe' => 'keluar',
+                        'jumlah' => $item['jumlah'],
+                        'stok_sebelum' => $stokSebelum,
+                        'stok_sesudah' => $stokSebelum - $item['jumlah'],
+                        'keterangan' => "Penjualan {$no_transaksi}",
+                    ]);
                 }
 
                 return $transaksi;

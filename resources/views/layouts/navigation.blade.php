@@ -36,6 +36,11 @@
                     </x-nav-link>
 
                     @if(Auth::user()->role === 'admin')
+                    <x-nav-link :href="route('stok.index')" :active="request()->routeIs('stok.*')" class="flex items-center gap-2">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Stok</span>
+                    </x-nav-link>
+
                     <x-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.*')" class="flex items-center gap-2">
                         <i class="fas fa-chart-line"></i>
                         <span>Laporan</span>
@@ -118,6 +123,11 @@
             </x-responsive-nav-link>
 
             @if(Auth::user()->role === 'admin')
+            <x-responsive-nav-link :href="route('stok.index')" :active="request()->routeIs('stok.*')" class="flex items-center gap-3">
+                <i class="fas fa-warehouse w-5"></i>
+                {{ __('Stok') }}
+            </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.*')" class="flex items-center gap-3">
                 <i class="fas fa-chart-line w-5"></i>
                 {{ __('Laporan') }}
