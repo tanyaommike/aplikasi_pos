@@ -11,7 +11,24 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $totalProduk = \App\Models\Produk::count();
+    $totalKategori = \App\Models\Kategori::count();
+    $totalTransaksi = \App\Models\Transaksi::count();
+    $produkHabis = \App\Models\Produk::where('stok', '<=', 5)->count();
+    $transaksiHariIni = \App\Models\Transaksi::whereDate('tanggal_transaksi', today())->count();
+    $pendapatanHariIni = \App\Models\Transaksi::whereDate('tanggal_transaksi', today())->sum('total_harga');
+    
+    $recentTransaksi = \App\Models\Transaksi::with('user')->latest()->take(5)->get();
+    
+    return view('dashboard', compact(
+        'totalProduk', 
+        'totalKategori', 
+        'totalTransaksi', 
+        'produkHabis',
+        'transaksiHariIni',
+        'pendapatanHariIni',
+        'recentTransaksi'
+    ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

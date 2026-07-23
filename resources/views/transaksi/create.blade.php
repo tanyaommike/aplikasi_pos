@@ -1,101 +1,160 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Form Transaksi') }}
-        </h2>
+        <div>
+            <h2 class="font-bold text-2xl text-slate-800 leading-tight flex items-center gap-3">
+                <i class="fas fa-cash-register text-green-600"></i>
+                Kasir - Transaksi Baru
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">Pilih produk dan selesaikan transaksi</p>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 gap-6">
-                <!-- Kolom kiri: Pilih Produk -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-4">Pilih Produk</h3>
+    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Kolom kiri: Pilih Produk (2 kolom) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Product Selection -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-shopping-basket text-indigo-600"></i>
+                        Pilih Produk
+                    </h3>
 
                     <form id="formAddToCart">
                         @csrf
-                        <div class="mb-4">
-                            <label for="produk_id" class="block text-gray-700 font-bold mb-2">Produk</label>
-                            <select id="produk_id" name="produk_id" class="w-full border rounded px-3 py-2" required>
-                                <option value="">-- Pilih Produk --</option>
-                                @foreach ($produk as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama_produk }} (Rp {{ number_format($item->harga, 0, ',', '.') }})</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="produk_id" class="block text-sm font-semibold text-slate-700 mb-2">Produk</label>
+                                <select id="produk_id" name="produk_id" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required>
+                                    <option value="">-- Pilih Produk --</option>
+                                    @foreach ($produk as $item)
+                                        <option value="{{ $item->id }}" data-harga="{{ $item->harga }}">
+                                            {{ $item->nama_produk }} - {{ format_rupiah($item->harga) }} (Stok: {{ $item->stok }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div class="mb-4">
-                            <label for="jumlah" class="block text-gray-700 font-bold mb-2">Jumlah</label>
-                            <input type="number" id="jumlah" name="jumlah" class="w-full border rounded px-3 py-2" value="1" min="1" required>
-                        </div>
+                            <div>
+                                <label for="jumlah" class="block text-sm font-semibold text-slate-700 mb-2">Jumlah</label>
+                                <input type="number" id="jumlah" name="jumlah" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value="1" min="1" required>
+                            </div>
 
-                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Tambah ke Keranjang</button>
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-plus-circle"></i>
+                                Tambah ke Keranjang
+                            </button>
+                        </div>
                     </form>
                     
                     @if (session('error'))
-                        <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                            {{ session('error') }}
+                        <div class="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                            <span>{{ session('error') }}</span>
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                            @foreach ($errors->all() as $error)
-                                <p>{{ $error }}</p>
-                            @endforeach
+                        <div class="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                                <span class="font-semibold">Terdapat kesalahan:</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-1 text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
                 </div>
 
-                <!-- Kolom kanan: Keranjang -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-4">Keranjang ({{ count($cart) }} item)</h3>
+                <!-- Available Products Grid -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-box-open text-blue-600"></i>
+                        Produk Tersedia
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+                        @foreach ($produk as $item)
+                            <button type="button" onclick="selectProduct({{ $item->id }})" class="p-3 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all group text-left">
+                                <div class="aspect-square bg-slate-100 rounded-lg mb-2 overflow-hidden">
+                                    @if($item->foto)
+                                        <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i class="fas fa-image text-slate-300 text-2xl"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <p class="text-xs font-semibold text-slate-800 truncate">{{ $item->nama_produk }}</p>
+                                <p class="text-xs text-indigo-600 font-bold">{{ format_rupiah($item->harga) }}</p>
+                                <p class="text-xs text-slate-500">Stok: {{ $item->stok }}</p>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom kanan: Keranjang (1 kolom) -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-shopping-cart text-green-600"></i>
+                        Keranjang
+                        <span class="ml-auto text-sm font-normal bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">{{ count($cart) }} item</span>
+                    </h3>
 
                     @if (count($cart) > 0)
-                        <table class="w-full border-collapse mb-4">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="border px-2 py-2 text-left text-sm">Produk</th>
-                                    <th class="border px-2 py-2 text-center text-sm">Qty</th>
-                                    <th class="border px-2 py-2 text-right text-sm">Harga</th>
-                                    <th class="border px-2 py-2 text-right text-sm">Subtotal</th>
-                                    <th class="border px-2 py-2 text-center text-sm">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php $total = 0; @endphp
-                                @foreach ($cart as $item)
-                                    @php $total += $item['subtotal']; @endphp
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="border px-2 py-2 text-sm">{{ $item['nama_produk'] }}</td>
-                                        <td class="border px-2 py-2 text-center text-sm">{{ $item['jumlah'] }}</td>
-                                        <td class="border px-2 py-2 text-right text-sm">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
-                                        <td class="border px-2 py-2 text-right text-sm">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                                        <td class="border px-2 py-2 text-center">
-                                            <form action="{{ route('transaksi.removeFromCart', $item['produk_id']) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 text-sm" onclick="return confirm('Hapus item?');">Hapus</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                        <div class="space-y-3 mb-6 max-h-96 overflow-y-auto">
+                            @php $total = 0; @endphp
+                            @foreach ($cart as $item)
+                                @php $total += $item['subtotal']; @endphp
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-slate-800">{{ $item['nama_produk'] }}</p>
+                                            <p class="text-xs text-slate-500">{{ $item['jumlah'] }} x {{ format_rupiah($item['harga_satuan']) }}</p>
+                                        </div>
+                                        <form action="{{ route('transaksi.removeFromCart', $item['produk_id']) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:text-red-700 text-sm ml-2" onclick="return confirm('Hapus item?');">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <p class="text-sm font-bold text-indigo-600">{{ format_rupiah($item['subtotal']) }}</p>
+                                </div>
+                            @endforeach
+                        </div>
 
-                        <div class="border-t pt-4 mb-4">
-                            <div class="flex justify-between font-bold text-lg">
-                                <span>Total:</span>
-                                <span>Rp {{ number_format($total, 0, ',', '.') }}</span>
+                        <!-- Total -->
+                        <div class="border-t border-slate-200 pt-4 mb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-slate-600">Subtotal</span>
+                                <span class="font-semibold text-slate-800">{{ format_rupiah($total) }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-lg font-bold">
+                                <span class="text-slate-800">Total</span>
+                                <span class="text-indigo-600">{{ format_rupiah($total) }}</span>
                             </div>
                         </div>
 
+                        <!-- Checkout Button -->
                         <form action="{{ route('transaksi.store') }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Selesaikan Transaksi</button>
+                            <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                                <i class="fas fa-check-circle"></i>
+                                Selesaikan Transaksi
+                            </button>
                         </form>
                     @else
-                        <p class="text-gray-500 text-center py-8">Keranjang kosong</p>
+                        <div class="text-center py-12">
+                            <i class="fas fa-shopping-cart text-slate-300 text-5xl mb-3"></i>
+                            <p class="text-slate-500 font-medium">Keranjang kosong</p>
+                            <p class="text-sm text-slate-400 mt-1">Tambahkan produk ke keranjang</p>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -103,6 +162,11 @@
     </div>
 
     <script>
+        function selectProduct(productId) {
+            document.getElementById('produk_id').value = productId;
+            document.getElementById('jumlah').focus();
+        }
+
         document.getElementById('formAddToCart').addEventListener('submit', async (e) => {
             e.preventDefault();
 

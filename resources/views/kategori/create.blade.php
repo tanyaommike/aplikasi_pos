@@ -1,38 +1,77 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tambah Kategori') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-bold text-2xl text-slate-800 leading-tight flex items-center gap-3">
+                    <i class="fas fa-plus-circle text-purple-600"></i>
+                    Tambah Kategori
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">Buat kategori produk baru</p>
+            </div>
+            <a href="{{ route('kategori.index') }}" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 font-medium">
+                <i class="fas fa-arrow-left"></i>
+                Kembali
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form action="{{ route('kategori.store') }}" method="POST">
-                    @csrf
+    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <form action="{{ route('kategori.store') }}" method="POST">
+                @csrf
 
-                    <div class="mb-4">
-                        <label for="nama_kategori" class="block text-gray-700 font-bold mb-2">Nama Kategori</label>
-                        <input type="text" name="nama_kategori" id="nama_kategori" class="w-full border rounded px-3 py-2 @error('nama_kategori') border-red-500 @enderror" value="{{ old('nama_kategori') }}" required>
+                <div class="space-y-6">
+                    <!-- Nama Kategori -->
+                    <div>
+                        <label for="nama_kategori" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Nama Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="nama_kategori" 
+                               name="nama_kategori" 
+                               value="{{ old('nama_kategori') }}"
+                               class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors @error('nama_kategori') border-red-500 @enderror" 
+                               placeholder="Contoh: Makanan, Minuman, Snack"
+                               required>
                         @error('nama_kategori')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                            <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
 
-                    <div class="mb-4">
-                        <label for="deskripsi" class="block text-gray-700 font-bold mb-2">Deskripsi (opsional)</label>
-                        <textarea name="deskripsi" id="deskripsi" class="w-full border rounded px-3 py-2" rows="4">{{ old('deskripsi') }}</textarea>
+                    <!-- Deskripsi -->
+                    <div>
+                        <label for="deskripsi" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Deskripsi
+                        </label>
+                        <textarea id="deskripsi" 
+                                  name="deskripsi" 
+                                  rows="4"
+                                  class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors @error('deskripsi') border-red-500 @enderror"
+                                  placeholder="Deskripsi kategori (opsional)">{{ old('deskripsi') }}</textarea>
                         @error('deskripsi')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                            <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
 
-                    <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Simpan</button>
-                        <a href="{{ route('kategori.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Batal</a>
+                    <!-- Buttons -->
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg">
+                            <i class="fas fa-save"></i>
+                            Simpan Kategori
+                        </button>
+                        <a href="{{ route('kategori.index') }}" class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-6 rounded-xl transition-colors">
+                            <i class="fas fa-times"></i>
+                            Batal
+                        </a>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

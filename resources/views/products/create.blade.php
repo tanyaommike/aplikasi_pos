@@ -1,76 +1,164 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tambah Produk') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-bold text-2xl text-slate-800 leading-tight flex items-center gap-3">
+                    <i class="fas fa-plus-circle text-blue-600"></i>
+                    Tambah Produk
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">Tambahkan produk baru ke inventory</p>
+            </div>
+            <a href="{{ route('produk.index') }}" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 font-medium">
+                <i class="fas fa-arrow-left"></i>
+                Kembali
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-                    <div class="mb-4">
-                        <label for="kategori_id" class="block text-gray-700 font-bold mb-2">Kategori</label>
-                        <select name="kategori_id" id="kategori_id" class="w-full border rounded px-3 py-2 @error('kategori_id') border-red-500 @enderror" required>
-                            <option value="">-- Pilih Kategori --</option>
-                            @foreach ($kategori as $kat)
-                                <option value="{{ $kat->id }}" {{ old('kategori_id') == $kat->id ? 'selected' : '' }}>{{ $kat->nama_kategori }}</option>
-                            @endforeach
-                        </select>
-                        @error('kategori_id')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-6">
+                        <!-- Kategori -->
+                        <div>
+                            <label for="kategori_id" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Kategori <span class="text-red-500">*</span>
+                            </label>
+                            <select name="kategori_id" id="kategori_id" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('kategori_id') border-red-500 @enderror" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach ($kategori as $kat)
+                                    <option value="{{ $kat->id }}" {{ old('kategori_id') == $kat->id ? 'selected' : '' }}>{{ $kat->nama_kategori }}</option>
+                                @endforeach
+                            </select>
+                            @error('kategori_id')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Nama Produk -->
+                        <div>
+                            <label for="nama_produk" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Nama Produk <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_produk" id="nama_produk" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('nama_produk') border-red-500 @enderror" value="{{ old('nama_produk') }}" placeholder="Contoh: Kopi Susu Gula Aren" required>
+                            @error('nama_produk')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Harga -->
+                        <div>
+                            <label for="harga" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Harga (Rp) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-semibold">Rp</span>
+                                <input type="number" name="harga" id="harga" class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('harga') border-red-500 @enderror" value="{{ old('harga') }}" min="1000" placeholder="15000" required>
+                            </div>
+                            @error('harga')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Stok -->
+                        <div>
+                            <label for="stok" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Stok <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="stok" id="stok" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('stok') border-red-500 @enderror" value="{{ old('stok') }}" min="0" placeholder="100" required>
+                            @error('stok')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="nama_produk" class="block text-gray-700 font-bold mb-2">Nama Produk</label>
-                        <input type="text" name="nama_produk" id="nama_produk" class="w-full border rounded px-3 py-2 @error('nama_produk') border-red-500 @enderror" value="{{ old('nama_produk') }}" required>
-                        @error('nama_produk')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+                        <!-- Deskripsi -->
+                        <div>
+                            <label for="deskripsi" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Deskripsi
+                            </label>
+                            <textarea name="deskripsi" id="deskripsi" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('deskripsi') border-red-500 @enderror" rows="4" placeholder="Deskripsi produk (opsional)">{{ old('deskripsi') }}</textarea>
+                            @error('deskripsi')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
 
-                    <div class="mb-4">
-                        <label for="deskripsi" class="block text-gray-700 font-bold mb-2">Deskripsi (opsional)</label>
-                        <textarea name="deskripsi" id="deskripsi" class="w-full border rounded px-3 py-2" rows="4">{{ old('deskripsi') }}</textarea>
-                        @error('deskripsi')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
+                        <!-- Foto -->
+                        <div>
+                            <label for="foto" class="block text-sm font-semibold text-slate-700 mb-2">
+                                Foto Produk
+                            </label>
+                            <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors">
+                                <input type="file" name="foto" id="foto" class="hidden" accept="image/*" onchange="previewImage(event)">
+                                <label for="foto" class="cursor-pointer">
+                                    <div id="preview-container" class="hidden mb-4">
+                                        <img id="preview" class="mx-auto rounded-lg max-h-48 object-cover">
+                                    </div>
+                                    <div id="upload-placeholder">
+                                        <i class="fas fa-cloud-upload-alt text-slate-400 text-4xl mb-3"></i>
+                                        <p class="text-slate-600 font-medium">Klik untuk upload foto</p>
+                                        <p class="text-sm text-slate-500 mt-1">Max 2MB, format: JPEG, PNG, JPG, GIF</p>
+                                    </div>
+                                </label>
+                            </div>
+                            @error('foto')
+                                <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <label for="harga" class="block text-gray-700 font-bold mb-2">Harga (Rp)</label>
-                        <input type="number" name="harga" id="harga" class="w-full border rounded px-3 py-2 @error('harga') border-red-500 @enderror" value="{{ old('harga') }}" min="1000" required>
-                        @error('harga')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="stok" class="block text-gray-700 font-bold mb-2">Stok</label>
-                        <input type="number" name="stok" id="stok" class="w-full border rounded px-3 py-2 @error('stok') border-red-500 @enderror" value="{{ old('stok') }}" min="0" required>
-                        @error('stok')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="foto" class="block text-gray-700 font-bold mb-2">Foto (opsional)</label>
-                        <input type="file" name="foto" id="foto" class="w-full border rounded px-3 py-2 @error('foto') border-red-500 @enderror" accept="image/*">
-                        @error('foto')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                        <small class="text-gray-500">Max 2MB, format: JPEG, PNG, JPG, GIF</small>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Simpan</button>
-                        <a href="{{ route('produk.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Batal</a>
-                    </div>
-                </form>
-            </div>
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-8 mt-8 border-t border-slate-200">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg">
+                        <i class="fas fa-save"></i>
+                        Simpan Produk
+                    </button>
+                    <a href="{{ route('produk.index') }}" class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-6 rounded-xl transition-colors">
+                        <i class="fas fa-times"></i>
+                        Batal
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
+
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('preview-container').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </x-app-layout>
