@@ -28,7 +28,7 @@ class TransaksiController extends Controller implements HasMiddleware
             abort(403, 'Tidak berhak akses transaksi');
         }
 
-        $produk = Produk::where('stok', '>', 0)->get();
+        $produk = Produk::with('kategori')->where('stok', '>', 0)->get();
         $cart = session()->get('cart', []);
         
         return view('transaksi.create', compact('produk', 'cart'));
@@ -157,6 +157,8 @@ class TransaksiController extends Controller implements HasMiddleware
             abort(403);
         }
 
+        $transaksi->load(['user', 'detail.produk']);
+
         return view('transaksi.show', compact('transaksi'));
     }
 
@@ -169,9 +171,9 @@ class TransaksiController extends Controller implements HasMiddleware
 
         // Kasir hanya lihat transaksi mereka, admin lihat semua
         if (auth()->user()->role === 'kasir') {
-            $transaksi = Transaksi::where('user_id', auth()->id())->latest()->paginate(10);
+            $transaksi = Transaksi::with('user', 'detail')->where('user_id', auth()->id())->latest()->paginate(10);
         } else {
-            $transaksi = Transaksi::latest()->paginate(10);
+            $transaksi = Transaksi::with('user', 'detail')->latest()->paginate(10);
         }
 
         return view('transaksi.index', compact('transaksi'));

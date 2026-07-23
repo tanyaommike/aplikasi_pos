@@ -18,17 +18,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::middleware(['auth'])->group(function () {
-        Route::resource('kategori', KategoriController::class);
-    });
+    
+    // Kategori routes
+    Route::resource('kategori', KategoriController::class);
+    
+    // Produk routes
     Route::resource('produk', ProdukController::class);
+    
+    // Transaksi routes
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
-    Route::post('transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
-    Route::delete('transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
-
     Route::get('/transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
     Route::get('/transaksi/{transaksi}', [TransaksiController::class, 'show'])->name('transaksi.show');
+    Route::post('/transaksi/add-to-cart', [TransaksiController::class, 'addToCart'])->name('transaksi.addToCart');
+    Route::delete('/transaksi/remove-from-cart/{produk_id}', [TransaksiController::class, 'removeFromCart'])->name('transaksi.removeFromCart');
 });
 
 require __DIR__.'/auth.php';

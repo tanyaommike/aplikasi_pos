@@ -29,7 +29,7 @@ class ProdukController extends Controller implements HasMiddleware
     // 1. Tampilkan list produk
     public function index(Request $request)
     {
-        $query = Produk::query();
+        $query = Produk::with('kategori'); // Fix N+1 query
 
         if ($request->filled('search')) {
             $query->where('nama_produk', 'like', '%' . $request->search . '%');

@@ -64,6 +64,12 @@ class KategoriController extends Controller implements HasMiddleware
     public function destroy(Kategori $kategori)
     {
         $this->checkAdmin();
+        
+        // Cek apakah kategori ini masih dipakai produk
+        if ($kategori->produk()->count() > 0) {
+            return redirect()->route('kategori.index')->with('error', 'Kategori tidak bisa dihapus karena masih ada produk yang menggunakannya');
+        }
+        
         $kategori->delete();
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus');
     }

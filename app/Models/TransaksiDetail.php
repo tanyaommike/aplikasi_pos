@@ -10,12 +10,20 @@ class TransaksiDetail extends Model
     use HasFactory;
 
     protected $table = 'transaksi_detail';
+    public $timestamps = false; // Tabel detail tidak perlu timestamps
+    
     protected $fillable = [
         'transaksi_id',
         'produk_id',
         'jumlah',
         'harga_satuan',
         'subtotal',
+    ];
+
+    protected $casts = [
+        'jumlah' => 'integer',
+        'harga_satuan' => 'integer',
+        'subtotal' => 'integer',
     ];
 
     // Relasi: Detail milik satu Transaksi

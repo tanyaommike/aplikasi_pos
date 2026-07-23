@@ -20,6 +20,11 @@ class Produk extends Model
         'foto',
     ];
 
+    protected $casts = [
+        'harga' => 'integer',
+        'stok' => 'integer',
+    ];
+
     // Relasi: Produk milik satu Kategori
     public function kategori()
     {
@@ -30,5 +35,17 @@ class Produk extends Model
     public function transaksiDetail()
     {
         return $this->hasMany(TransaksiDetail::class, 'produk_id');
+    }
+
+    // Accessor untuk format harga
+    public function getHargaFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->harga, 0, ',', '.');
+    }
+
+    // Scope untuk produk yang tersedia
+    public function scopeAvailable($query)
+    {
+        return $query->where('stok', '>', 0);
     }
 }

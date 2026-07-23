@@ -19,6 +19,7 @@ class Transaksi extends Model
 
     protected $casts = [
         'tanggal_transaksi' => 'datetime',
+        'total_harga' => 'integer',
     ];
 
     // Relasi: Transaksi milik satu User (kasir)
@@ -31,5 +32,11 @@ class Transaksi extends Model
     public function detail()
     {
         return $this->hasMany(TransaksiDetail::class, 'transaksi_id');
+    }
+
+    // Accessor untuk format total harga
+    public function getTotalHargaFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
     }
 }
