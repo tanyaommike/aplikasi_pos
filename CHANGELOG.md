@@ -1,5 +1,22 @@
 # Changelog - Aplikasi POS
 
+## [2.1.0] - 2026-07-23
+
+### 📚 Documentation Cleanup
+- **Removed**: PRESENTASI_FITUR.md (redundant, too verbose)
+- **Removed**: PROGRESS_LOG.md (development log, not needed in repo)
+- **Removed**: ROADMAP_FITUR.md (replaced with comprehensive status doc)
+- **Added**: STATUS_PROYEK.md (comprehensive project status & recommendations)
+- **Updated**: CHANGELOG.md (this file)
+
+### 📊 Project Status
+- Core features: 100% complete
+- Security & Performance: 85% complete
+- Advanced features: Roadmap defined
+- **Status**: Production-ready for small-medium retail
+
+---
+
 ## [2.0.0] - 2026-07-23
 
 ### ✨ UI/UX Complete Redesign
