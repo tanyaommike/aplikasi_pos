@@ -176,11 +176,6 @@ class TransaksiController extends Controller implements HasMiddleware
             abort(403);
         }
 
-        // Hanya lihat transaksi user sendiri (kasir) atau semua (admin)
-        if (auth()->user()->role === 'kasir' && $transaksi->user_id !== auth()->id()) {
-            abort(403);
-        }
-
         $transaksi->load(['user', 'detail.produk']);
 
         return view('transaksi.show', compact('transaksi'));
